@@ -1,0 +1,48 @@
+[package]
+name = "media-server"
+version = "0.1.0"
+edition = "2024"
+description = "Contact-center media server: calls and N-party conferences on a fixed set of RTP threads, transcoding, DTMF, recording, WebRTC (ICE-lite, DTLS-SRTP); control over TCP"
+license = "UNLICENSED"
+publish = false
+
+[lib]
+name = "media_server"
+path = "src/lib.rs"
+
+[[bin]]
+name = "media-server"
+path = "src/main.rs"
+
+[features]
+# A codec for tests only (pulse positions, `x-pulse/8000`); production builds leave it out.
+# `cargo test` turns it on through the dev-dependency below.
+test-codec = []
+
+[dependencies]
+anyhow = "1.0.104"
+clap = { version = "4.6.7", features = ["derive", "env"] }
+futures = "0.3.34"
+libc = "0.2.190"
+mio = { version = "1.2.4", features = ["net", "os-poll"] }
+# DTLS for WebRTC media, plus HMAC, hashes and the certificate. Links the system OpenSSL
+# (openssl-devel / libssl-dev).
+openssl = "0.10"
+# Raw OpenSSL calls the `openssl` crate doesn't wrap (the DTLS retransmission timer).
+openssl-sys = "0.9"
+foreign-types = "0.3"
+opusic-sys = "0.7.5"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+# libsrtp 2 for SRTP. Builds the libsrtp bundled with srtp2-sys (needs make, a C compiler
+# and libclang for bindgen) and uses OpenSSL for its ciphers.
+srtp = "0.7"
+thiserror = "2.0.21"
+tokio = { version = "1.53.2", features = ["full"] }
+tokio-util = { version = "0.7.19", features = ["codec", "rt"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["json", "env-filter"] }
+
+[dev-dependencies]
+# The crate itself, with the test codec, for its own tests.
+media-server = { path = ".", features = ["test-codec"] }
